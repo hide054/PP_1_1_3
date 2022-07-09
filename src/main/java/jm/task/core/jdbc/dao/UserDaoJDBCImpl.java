@@ -59,6 +59,7 @@ public class UserDaoJDBCImpl implements UserDao {
                 ex.printStackTrace();
             }
         }
+        System.out.println("User с именем" + name + " добавлен в базу данных");
     }
 
     public void removeUserById(long id) {
@@ -80,13 +81,17 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public List<User> getAllUsers() {
         List<User> users = new ArrayList<>();
-        try (Statement getAllStatement = CONNECTION.createStatement();
-                ResultSet resultSet = getAllStatement.executeQuery("SELECT * FROM Users")) {
+        try (PreparedStatement preparedStatement = CONNECTION.prepareStatement(
+                "SELECT * FROM Users")) {
+            ResultSet resultSet = preparedStatement.executeQuery();
             while(resultSet.next()) {
-                users.add(new User());
-            }
-            for (User printUser : users) {
-                System.out.println(printUser);
+                Long id = resultSet.getLong("Id");
+                String name = resultSet.getString("Name");
+                String lastName = resultSet.getString("LastName");
+                byte age = resultSet.getByte("Age");
+                User newUser = new User(name, lastName, (byte)age);
+                newUser.setId(id);
+                users.add(newUser);
             }
         } catch (SQLException e) {
             try {
