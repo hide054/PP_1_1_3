@@ -6,13 +6,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserDaoJDBCImpl implements UserDao {
+    private static final String createTable = "CREATE TABLE IF NOT EXISTS Users" +
+            "(Id INTEGER NOT NULL AUTO_INCREMENT, Name VARCHAR(65) NOT NULL, LastName VARCHAR(65) NOT NULL, Age INT NOT NULL, PRIMARY KEY (ID))";
+    private static final String dropTable = "DROP TABLE IF EXIST Users";
+    private static final String saveNewUser = "INSERT INTO Users (Name, LastName, Age) VALUES(?, ?, ?)";
+    private static final String deleteUserById ="DELETE FROM Users WHERE ID = ?";
+    private static final String getUsersFromTable = "SELECT * FROM Users";
+    private static final String cleanTable ="TRUNCATE TABLE Users";
     private static final Connection CONNECTION = Util.getConnection();
 
     public void createUsersTable() {
-        try(Statement сreateStatement = CONNECTION.createStatement()) {
-            сreateStatement.executeUpdate("CREATE TABLE IF NOT EXISTS Users" +
-                    "(Id INT PRIMARY KEY AUTO_INCREMENT, Name VARCHAR(65), LastName VARCHAR(65), Age INT)"
-            );
+        try(Statement newTableStatement = CONNECTION.createStatement()) {
+            newTableStatement.executeUpdate(createTable);
             CONNECTION.commit();
         } catch (SQLException e) {
             try {
@@ -26,7 +31,7 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public void dropUsersTable() {
         try(Statement dropStatement = CONNECTION.createStatement()) {
-            dropStatement.executeUpdate("DROP TABLE IF EXIST Users");
+            dropStatement.executeUpdate(dropTable);
             CONNECTION.commit();
         } catch (SQLException e) {
             try {
@@ -39,9 +44,7 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void saveUser(String name, String lastName, byte age) {
-        try(PreparedStatement psUserSave = CONNECTION.prepareStatement(
-                "INSERT INTO Users (Name, LastName, Age) VALUES(?, ?, ?)"
-            )
+        try(PreparedStatement psUserSave = CONNECTION.prepareStatement(saveNewUser)
         ) {
             psUserSave.setString(1, name);
             psUserSave.setString(2, lastName);
@@ -60,8 +63,7 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void removeUserById(long id) {
-        try(PreparedStatement psDeleteUserById = CONNECTION.prepareStatement(
-                "DELETE FROM Users WHERE ID = ?")
+        try(PreparedStatement psDeleteUserById = CONNECTION.prepareStatement(deleteUserById)
         ) {
             psDeleteUserById.setLong(1, id);
             psDeleteUserById.executeUpdate();
@@ -78,17 +80,14 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public List<User> getAllUsers() {
         List<User> users = new ArrayList<>();
-        try (PreparedStatement preparedStatement = CONNECTION.prepareStatement(
-                "SELECT * FROM Users")) {
-            ResultSet resultSet = preparedStatement.executeQuery();
+        try (Statement statement = CONNECTION.createStatement()) {
+            ResultSet resultSet = statement.executeQuery(getUsersFromTable);
             while(resultSet.next()) {
-                int i = 0;
-                users.add(new User(
-                        resultSet.getString(2),
-                        resultSet.getString(3),
-                        resultSet.getByte(4)
-                        )
-                );
+                User user = new User(resultSet.getString("Name"),
+                        resultSet.getString("LastName"),
+                        resultSet.getByte("Age"));
+                users.add(user);
+                resultSet.close();
             }
             CONNECTION.commit();
         } catch (SQLException e) {
@@ -104,7 +103,7 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public void cleanUsersTable() {
         try(Statement cleanStatement = CONNECTION.createStatement()) {
-            cleanStatement.executeUpdate("TRUNCATE TABLE Users");
+            cleanStatement.executeUpdate(cleanTable);
             CONNECTION.commit();
         } catch (SQLException e) {
             try {
