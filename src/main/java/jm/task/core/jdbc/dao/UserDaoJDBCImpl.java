@@ -6,15 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserDaoJDBCImpl implements UserDao {
-    private static Connection CONNECTION = Util.getConnection();
-    public UserDaoJDBCImpl() {
-        //
-    }
+    private static final Connection CONNECTION = Util.getConnection();
 
     public void createUsersTable() {
         try(Statement сreateStatement = CONNECTION.createStatement()) {
             сreateStatement.executeUpdate("CREATE TABLE IF NOT EXISTS Users" +
-                    "(ID INT PRIMARY KEY AUTO_INCREMENT, Name VARCHAR(65), LastName VARCHAR(65), Age INT)"
+                    "(Id INT PRIMARY KEY AUTO_INCREMENT, Name VARCHAR(65), LastName VARCHAR(65), Age INT)"
             );
             CONNECTION.commit();
         } catch (SQLException e) {
@@ -43,7 +40,7 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public void saveUser(String name, String lastName, byte age) {
         try(PreparedStatement psUserSave = CONNECTION.prepareStatement(
-                "INSERT INTO Users (Name, LastName, Age) VALUES (?, ?, ?)"
+                "INSERT INTO Users (Name, LastName, Age) VALUES(?, ?, ?)"
             )
         ) {
             psUserSave.setString(1, name);
@@ -59,7 +56,7 @@ public class UserDaoJDBCImpl implements UserDao {
                 ex.printStackTrace();
             }
         }
-        System.out.println("User с именем" + name + " добавлен в базу данных");
+        System.out.println("User с именем " + name + " добавлен в базу данных");
     }
 
     public void removeUserById(long id) {
@@ -85,6 +82,7 @@ public class UserDaoJDBCImpl implements UserDao {
                 "SELECT * FROM Users")) {
             ResultSet resultSet = preparedStatement.executeQuery();
             while(resultSet.next()) {
+                int i = 0;
                 users.add(new User(
                         resultSet.getString(2),
                         resultSet.getString(3),
@@ -92,6 +90,7 @@ public class UserDaoJDBCImpl implements UserDao {
                         )
                 );
             }
+            CONNECTION.commit();
         } catch (SQLException e) {
             try {
                 CONNECTION.rollback();
