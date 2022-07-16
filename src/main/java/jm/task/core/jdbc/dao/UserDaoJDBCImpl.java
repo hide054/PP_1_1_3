@@ -8,7 +8,7 @@ import java.util.List;
 public class UserDaoJDBCImpl implements UserDao {
     private static final String createTable = "CREATE TABLE IF NOT EXISTS Users" +
             "(Id INTEGER NOT NULL AUTO_INCREMENT, Name VARCHAR(65) NOT NULL, LastName VARCHAR(65) NOT NULL, Age INT NOT NULL, PRIMARY KEY (ID))";
-    private static final String dropTable = "DROP TABLE IF EXIST Users";
+    private static final String dropTable = "DROP TABLE IF EXISTS Users";
     private static final String saveNewUser = "INSERT INTO Users (Name, LastName, Age) VALUES(?, ?, ?)";
     private static final String deleteUserById ="DELETE FROM Users WHERE ID = ?";
     private static final String getUsersFromTable = "SELECT * FROM Users";
@@ -59,7 +59,7 @@ public class UserDaoJDBCImpl implements UserDao {
                 ex.printStackTrace();
             }
         }
-        System.out.println("User СЃ РёРјРµРЅРµРј " + name + " РґРѕР±Р°РІР»РµРЅ РІ Р±Р°Р·Сѓ РґР°РЅРЅС‹С…");
+        System.out.println("User с именем " + name + " добавлен в базу данных");
     }
 
     public void removeUserById(long id) {
